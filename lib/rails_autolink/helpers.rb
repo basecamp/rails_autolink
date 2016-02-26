@@ -115,7 +115,16 @@ module RailsAutolink
                 end
 
                 href = href.to_str.gsub(/"/) { |v| "%#{v.ord.to_s(16)}" }
-                content_tag(:a, link_text, link_attributes.merge('href' => href), !!options[:sanitize]) + punctuation.reverse.join('')
+
+                override_link_attributes = {"href" => href}
+                if (link_attributes.has_key?("target") &&
+                    options.has_key?(:target_blank_exception_url) &&
+                    link_attributes["target"]=="_blank" &&
+                    href =~ /https?:\/\/#{options[:target_blank_exception_url]}/)
+                  override_link_attributes["target"]="_self"
+                end
+
+                content_tag(:a, link_text, link_attributes.merge(override_link_attributes), !!options[:sanitize]) + punctuation.reverse.join('')
               end
             end
           end
